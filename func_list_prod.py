@@ -9,7 +9,8 @@ PRODUTOS = {
     "Linguiça": {"ibge": 7339, "seab": 1771},
     "Frango inteiro": {"ibge": 107617, "seab": 1789},
     "Sardinha": {"ibge": 7310, "seab": 1691},
-    "Milho (em grão)": {"ibge": 47618, "seab": None}
+    "Milho (em grão)": {"ibge": 47618, "seab": None},
+    "Banha de porco": {"ibge": 101499, "seab": None},
 }
 
 def obter_codigos(origem):
