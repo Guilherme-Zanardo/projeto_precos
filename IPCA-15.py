@@ -101,6 +101,11 @@ matriz_temporal = (
     .reset_index()
 ).map(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else x)
 
+
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+pd.set_option('display.width', None)
 matriz_temporal =pd.DataFrame(matriz_temporal)
 print(f"=========================================================================================================================================================")
 print(matriz_temporal)
