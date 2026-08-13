@@ -1,4 +1,4 @@
-name: Automação Python Dólar Agendado
+name: Automação Buscar Preços e IPCA-15
 
 on:
   schedule:
