@@ -7,7 +7,7 @@ from func_list_prod import obter_codigos
 # IPCA-15 PRÉVIA - API SIDRA -> resultado
 
 # PARÂMETROS
-P = "last 13"
+P = "last 6"
 C315 = obter_codigos('ibge')
 
 V = {
