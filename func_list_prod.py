@@ -11,6 +11,7 @@ PRODUTOS = {
     "Sardinha": {"ibge": 7310, "seab": 1691},
     "Milho (em grão)": {"ibge": 47618, "seab": None},
     "Banha de porco": {"ibge": 101499, "seab": None},
+    "Filé-mignon": {"ibge": 7292, "seab": None},
 }
 
 def obter_codigos(origem):
