@@ -12,7 +12,7 @@ PRODUTOS = {
     "Ovo de galinha": {"ibge": 7355, "seab": 1791},
     "Picanha": {"ibge": 47621, "seab": 1691},
     "Peixe - sardinha": {"ibge": 7310, "seab": None},
-    "Banha de porco": {"ibge": 101499, "seab": None}, # Não há registro de variação recente
+    "Banha de porco": {"ibge": 101499, "seab": None},
 }
 
 def obter_codigos(origem):
