@@ -1,4 +1,4 @@
-name: Automação Buscar Preços e IPCA-15
+name: API SIDRA IBGE - IPCA-15
 
 on:
   schedule:
