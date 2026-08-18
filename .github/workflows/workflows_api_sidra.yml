@@ -1,4 +1,4 @@
-name: API SIDRA IBGE - IPCA FECHADO
+name: API SIDRA IBGE
 
 on:
   schedule:
@@ -31,3 +31,7 @@ jobs:
       - name: Resultado IPCA Fechado
         run: |
           python IPCA.py 
+
+      - name: Resultado IPCA-15
+        run: |
+          python IPCA-15.py 
