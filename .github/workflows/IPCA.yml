@@ -24,7 +24,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Executar script Python
+      - name: Atualiza Lista de Produtos
         run: |
           python func_list_prod.py
-          python IPCA-15.py 
+
+      - name: Resultado IPCA Fechado
+        run: |
+          python IPCA.py 
