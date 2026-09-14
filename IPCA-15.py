@@ -7,20 +7,25 @@ from func_list_prod import obter_codigos
 # IPCA-15 PRÉVIA - API SIDRA -> resultado
 
 # PARÂMETROS
-P = "last 6"
-C315 = obter_codigos('ibge')
+P = "last 6" # Mês
+C315 = obter_codigos('ibge') # Período
 
-V = {
+V = { 
   "IPCA - Variação mensal": 355,
   "IPCA - Variação acumulada no ano": 356,
   "IPCA - Variação acumulada em 12 meses": 1120,
   # "IPCA - Peso mensal": 357,
-}
+} # Variáveis
 
 NOMES = {
     "IPCA - Variação mensal": "Mensal",
     "IPCA - Variação acumulada no ano": "Acumulado ano",
     "IPCA - Variação acumulada em 12 meses": "12 meses",
+}
+
+N71 = {
+    "RM de Curitiba (PR)": 5501,
+    "RM de São Paulo (SP)": 4901
 }
 
 # Tabela 1737: Série histórica com número-índice, variação mensal e acumuladas (3, 6, 12 meses e no ano) desde dezembro de 1979
@@ -29,7 +34,7 @@ NOMES = {
 # Tabela 7062: Prévia do IPCA (IPCA-15) por grupo
 
 # GET
-URL = f"https://apisidra.ibge.gov.br/values/t/7062/n1/all/v/{','.join(str(codigo) for codigo in V.values())}/p/{P}/c315/{','.join(str(codigo) for codigo in C315.values())}"
+URL = f"https://apisidra.ibge.gov.br/values/t/7062/n1/all/N71/{','.join(str(codigo) for codigo in N71.values())}/v/{','.join(str(codigo) for codigo in V.values())}/p/{P}/c315/{','.join(str(codigo) for codigo in C315.values())}"
 response = requests.get(URL)
 
 try:
