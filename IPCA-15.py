@@ -4,18 +4,17 @@ import pandas as pd
 from pathlib import Path
 from func_list_prod import obter_codigos
 
+
 # IPCA-15 PRÉVIA - API SIDRA -> resultado
-
 # PARÂMETROS
-P = "last 6" # Mês
-C315 = obter_codigos('ibge') # Período
+P = "last 6"  # Mês
+C315 = obter_codigos('ibge')  # Período
 
-V = { 
-  "IPCA - Variação mensal": 355,
-  "IPCA - Variação acumulada no ano": 356,
-  "IPCA - Variação acumulada em 12 meses": 1120,
-  # "IPCA - Peso mensal": 357,
-} # Variáveis
+V = {
+    "IPCA - Variação mensal": 355,
+    "IPCA - Variação acumulada no ano": 356,
+    "IPCA - Variação acumulada em 12 meses": 1120,
+}
 
 NOMES = {
     "IPCA - Variação mensal": "Mensal",
@@ -25,97 +24,121 @@ NOMES = {
 
 N71 = {
     "RM de Curitiba (PR)": 5501,
-    "RM de São Paulo (SP)": 4901
+    "RM de São Paulo (SP)": 4901,
+    "RM de Porto Alegre (RS)": 7401,
 }
 
-# Tabela 1737: Série histórica com número-índice, variação mensal e acumuladas (3, 6, 12 meses e no ano) desde dezembro de 1979
-# Tabela 7060: Variação mensal, acumulada no ano, em 12 meses e peso mensal por grupos, subgrupos e subitens (a partir de janeiro de 2020)
-# Tabela 7061: Variação detalhada por subitem específico de produto ou serviço
-# Tabela 7062: Prévia do IPCA (IPCA-15) por grupo
+for n in N71.items(): # Iterar sobre os territórios - Gerar um print por território
+    print(f'\n# TERRITÓRIO: {n[0].replace("RM de ", "")}')
 
-# GET
-URL = f"https://apisidra.ibge.gov.br/values/t/7062/n1/all/N71/{','.join(str(codigo) for codigo in N71.values())}/v/{','.join(str(codigo) for codigo in V.values())}/p/{P}/c315/{','.join(str(codigo) for codigo in C315.values())}"
-response = requests.get(URL)
-
-try:
-    response.raise_for_status()
-except requests.HTTPError as e:
-    print(f"Erro no request: {e}")
-    resultado = None
-else:
-    resultado = response.json()
-    legenda = resultado[0]
-    dados = resultado[1:]
-
-# TABELA MATRIZ TEMPORAL
-
-df = pd.DataFrame(dados)
-df["Produto"] = df["D4N"].str.split(".", n=1).str[-1] # Nome do produto
-df["Valor"] = pd.to_numeric(df["V"], errors="coerce") # Valor númerico
-periodo = df["D3N"].iloc[0]
-# df[["Produto", "D2N", "D3N", "Valor"]] # Tabela antes do Pivot
-
-# MENSAL
-mensal = df[df["D2N"] == "IPCA15 - Variação mensal"]
-
-tabela_meses = (
-    mensal.pivot_table(
-        index="Produto",
-        columns="D3N",
-        values="Valor",
-        aggfunc="first"
+    # GET
+    URL = (
+        f"https://apisidra.ibge.gov.br/values/t/7062"
+        # f"/n1/all"
+        f"/N71/{n[1]}"
+        f"/v/{','.join(str(codigo) for codigo in V.values())}"
+        f"/p/{P}"
+        f"/c315/{','.join(str(codigo) for codigo in C315.values())}"
     )
-)
 
-# Ordena os meses
-ordem_periodos = (
-    mensal[["D3C", "D3N"]]
-    .drop_duplicates()
-    .sort_values("D3C")["D3N"]
-    .tolist()
-)
+    response = requests.get(URL)
 
-tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as e:
+        print(f"Erro no request: {e}")
+        resultado = None
+    else:
+        resultado = response.json()
+        legenda = resultado[0]
+        dados = resultado[1:]
 
-# ÚLTIMO
-ultimo_periodo = df["D3C"].max()
+    # TABELA MATRIZ TEMPORAL
 
-acumulados = (
-    df[df["D3C"] == ultimo_periodo]
-    .pivot_table(
-        index="Produto",
-        columns="D2N",
-        values="Valor",
-        aggfunc="first"
+    df = pd.DataFrame(dados)
+
+    df["Produto"] = df["D4N"].str.split(".", n=1).str[-1]
+    df["Território"] = df["D1N"].str.replace("RM de ", "", regex=False)
+    df["Valor"] = pd.to_numeric(df["V"], errors="coerce")
+
+    periodo = df["D3N"].iloc[0]
+
+    # MENSAL
+    mensal = df[df["D2N"] == "IPCA15 - Variação mensal"]
+
+    tabela_meses = (
+        mensal.pivot_table(
+            index=["Território", "Produto"],
+            columns="D3N",
+            values="Valor",
+            aggfunc="first"
+        )
     )
-)
 
-acumulados = acumulados.rename(columns={
-    "IPCA15 - Variação acumulada no ano": "Acumulado",
-    "IPCA15 - Variação acumulada em 12 meses": "12 meses",
-})
+    # Ordena os meses
+    ordem_periodos = (
+        mensal[["D3C", "D3N"]]
+        .drop_duplicates()
+        .sort_values("D3C")["D3N"]
+        .tolist()
+    )
 
-colunas_existentes = [
-    c for c in ["Acumulado", "12 meses"]
-    if c in acumulados.columns
-]
+    tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
 
-matriz_temporal = (
-    tabela_meses
-    .join(acumulados[colunas_existentes], how="left")
-    .reset_index()
-).map(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else x)
+    # ÚLTIMO
+    ultimo_periodo = df["D3C"].max()
 
+    acumulados = (
+        df[df["D3C"] == ultimo_periodo]
+        .pivot_table(
+            index=["Território", "Produto"],
+            columns="D2N",
+            values="Valor",
+            aggfunc="first"
+        )
+    )
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_colwidth', None)
-pd.set_option('display.width', None)
-matriz_temporal =pd.DataFrame(matriz_temporal)
-print(f"=============================================================================================================")
-print(matriz_temporal)
-print(f"=============================================================================================================")
+    acumulados = acumulados.rename(columns={
+        "IPCA15 - Variação acumulada no ano": "Acumulado",
+        "IPCA15 - Variação acumulada em 12 meses": "12 meses",
+    })
 
-# EXPORT EXCEL
-# caminho_arquivo = Path(__file__).parent / "ipca-15.xlsx"
-# matriz_temporal.to_excel(caminho_arquivo, index=False)
+    colunas_existentes = [
+        c for c in ["Acumulado", "12 meses"]
+        if c in acumulados.columns
+    ]
+
+    matriz_temporal = (
+        tabela_meses
+        .join(acumulados[colunas_existentes], how="left")
+        .reset_index()
+    )
+
+    # Formatação dos valores
+    matriz_temporal = matriz_temporal.map(
+        lambda x: f"{x:.2f}%"
+        if isinstance(x, (int, float))
+        else x
+    )
+
+    # ORGANIZAÇÃO DAS COLUNAS
+    matriz_temporal = matriz_temporal[
+        ["Território", "Produto"]
+        + ordem_periodos
+        + colunas_existentes
+    ]
+
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.width', None)
+
+    matriz_temporal = pd.DataFrame(matriz_temporal)
+
+    print("=" * 120)
+    print(matriz_temporal)
+    print("=" * 120)
+
+    # EXPORT EXCEL
+    # caminho_arquivo = Path(__file__).parent / "ipca-15.xlsx"
+    # matriz_temporal.to_excel(caminho_arquivo, index=False)
