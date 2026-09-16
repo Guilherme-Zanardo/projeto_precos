@@ -53,92 +53,92 @@ for n in N71.items(): # Iterar sobre os territórios - Gerar um print por territ
         legenda = resultado[0]
         dados = resultado[1:]
 
-    # TABELA MATRIZ TEMPORAL
+        # TABELA MATRIZ TEMPORAL
 
-    df = pd.DataFrame(dados)
+        df = pd.DataFrame(dados)
 
-    df["Produto"] = df["D4N"].str.split(".", n=1).str[-1]
-    df["Território"] = df["D1N"].str.replace("RM de ", "", regex=False)
-    df["Valor"] = pd.to_numeric(df["V"], errors="coerce")
+        df["Produto"] = df["D4N"].str.split(".", n=1).str[-1]
+        df["Território"] = df["D1N"].str.replace("RM de ", "", regex=False)
+        df["Valor"] = pd.to_numeric(df["V"], errors="coerce")
 
-    periodo = df["D3N"].iloc[0]
+        periodo = df["D3N"].iloc[0]
 
-    # MENSAL
-    mensal = df[df["D2N"] == "IPCA15 - Variação mensal"]
+        # MENSAL
+        mensal = df[df["D2N"] == "IPCA15 - Variação mensal"]
 
-    tabela_meses = (
-        mensal.pivot_table(
-            index=["Território", "Produto"],
-            columns="D3N",
-            values="Valor",
-            aggfunc="first"
+        tabela_meses = (
+            mensal.pivot_table(
+                index=["Território", "Produto"],
+                columns="D3N",
+                values="Valor",
+                aggfunc="first"
+            )
         )
-    )
 
-    # Ordena os meses
-    ordem_periodos = (
-        mensal[["D3C", "D3N"]]
-        .drop_duplicates()
-        .sort_values("D3C")["D3N"]
-        .tolist()
-    )
-
-    tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
-
-    # ÚLTIMO
-    ultimo_periodo = df["D3C"].max()
-
-    acumulados = (
-        df[df["D3C"] == ultimo_periodo]
-        .pivot_table(
-            index=["Território", "Produto"],
-            columns="D2N",
-            values="Valor",
-            aggfunc="first"
+        # Ordena os meses
+        ordem_periodos = (
+            mensal[["D3C", "D3N"]]
+            .drop_duplicates()
+            .sort_values("D3C")["D3N"]
+            .tolist()
         )
-    )
 
-    acumulados = acumulados.rename(columns={
-        "IPCA15 - Variação acumulada no ano": "Acumulado",
-        "IPCA15 - Variação acumulada em 12 meses": "12 meses",
-    })
+        tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
 
-    colunas_existentes = [
-        c for c in ["Acumulado", "12 meses"]
-        if c in acumulados.columns
-    ]
+        # ÚLTIMO
+        ultimo_periodo = df["D3C"].max()
 
-    matriz_temporal = (
-        tabela_meses
-        .join(acumulados[colunas_existentes], how="left")
-        .reset_index()
-    )
+        acumulados = (
+            df[df["D3C"] == ultimo_periodo]
+            .pivot_table(
+                index=["Território", "Produto"],
+                columns="D2N",
+                values="Valor",
+                aggfunc="first"
+            )
+        )
 
-    # Formatação dos valores
-    matriz_temporal = matriz_temporal.map(
-        lambda x: f"{x:.2f}%"
-        if isinstance(x, (int, float))
-        else x
-    )
+        acumulados = acumulados.rename(columns={
+            "IPCA15 - Variação acumulada no ano": "Acumulado",
+            "IPCA15 - Variação acumulada em 12 meses": "12 meses",
+        })
 
-    # ORGANIZAÇÃO DAS COLUNAS
-    matriz_temporal = matriz_temporal[
-        ["Território", "Produto"]
-        + ordem_periodos
-        + colunas_existentes
-    ]
+        colunas_existentes = [
+            c for c in ["Acumulado", "12 meses"]
+            if c in acumulados.columns
+        ]
 
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_colwidth', None)
-    pd.set_option('display.width', None)
+        matriz_temporal = (
+            tabela_meses
+            .join(acumulados[colunas_existentes], how="left")
+            .reset_index()
+        )
 
-    matriz_temporal = pd.DataFrame(matriz_temporal)
+        # Formatação dos valores
+        matriz_temporal = matriz_temporal.map(
+            lambda x: f"{x:.2f}%"
+            if isinstance(x, (int, float))
+            else x
+        )
 
-    print("=" * 120)
-    print(matriz_temporal)
-    print("=" * 120)
+        # ORGANIZAÇÃO DAS COLUNAS
+        matriz_temporal = matriz_temporal[
+            ["Território", "Produto"]
+            + ordem_periodos
+            + colunas_existentes
+        ]
 
-    # EXPORT EXCEL
-    # caminho_arquivo = Path(__file__).parent / "ipca-15.xlsx"
-    # matriz_temporal.to_excel(caminho_arquivo, index=False)
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.max_colwidth', None)
+        pd.set_option('display.width', None)
+
+        matriz_temporal = pd.DataFrame(matriz_temporal)
+
+        print("=" * 120)
+        print(matriz_temporal)
+        print("=" * 120)
+
+        # EXPORT EXCEL
+        # caminho_arquivo = Path(__file__).parent / "ipca-15.xlsx"
+        # matriz_temporal.to_excel(caminho_arquivo, index=False)
