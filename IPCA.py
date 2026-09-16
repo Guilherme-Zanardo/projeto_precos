@@ -43,75 +43,75 @@ else:
     dados = resultado[1:]
 
 
-# TABELA MATRIZ TEMPORAL
+    # TABELA MATRIZ TEMPORAL
 
-df = pd.DataFrame(dados)
-df["Produto"] = df["D4N"].str.split(".", n=1).str[-1] # Nome do produto
-df["Valor"] = pd.to_numeric(df["V"], errors="coerce") # Valor númerico
-periodo = df["D3N"].iloc[0]
-# df[["Produto", "D2N", "D3N", "Valor"]] # Tabela antes do Pivot
+    df = pd.DataFrame(dados)
+    df["Produto"] = df["D4N"].str.split(".", n=1).str[-1] # Nome do produto
+    df["Valor"] = pd.to_numeric(df["V"], errors="coerce") # Valor númerico
+    periodo = df["D3N"].iloc[0]
+    # df[["Produto", "D2N", "D3N", "Valor"]] # Tabela antes do Pivot
 
-# MENSAL
-mensal = df[df["D2N"] == "IPCA - Variação mensal"]
+    # MENSAL
+    mensal = df[df["D2N"] == "IPCA - Variação mensal"]
 
-tabela_meses = (
-    mensal.pivot_table(
-        index="Produto",
-        columns="D3N",
-        values="Valor",
-        aggfunc="first"
+    tabela_meses = (
+        mensal.pivot_table(
+            index="Produto",
+            columns="D3N",
+            values="Valor",
+            aggfunc="first"
+        )
     )
-)
 
-# Ordena os meses
-ordem_periodos = (
-    mensal[["D3C", "D3N"]]
-    .drop_duplicates()
-    .sort_values("D3C")["D3N"]
-    .tolist()
-)
-
-tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
-
-# ÚLTIMO
-ultimo_periodo = df["D3C"].max()
-
-acumulados = (
-    df[df["D3C"] == ultimo_periodo]
-    .pivot_table(
-        index="Produto",
-        columns="D2N",
-        values="Valor",
-        aggfunc="first"
+    # Ordena os meses
+    ordem_periodos = (
+        mensal[["D3C", "D3N"]]
+        .drop_duplicates()
+        .sort_values("D3C")["D3N"]
+        .tolist()
     )
-)
 
-acumulados = acumulados.rename(columns={
-    "IPCA - Variação acumulada no ano": "Acumulado",
-    "IPCA - Variação acumulada em 12 meses": "12 meses",
-})
+    tabela_meses = tabela_meses.reindex(columns=ordem_periodos)
 
-colunas_existentes = [
-    c for c in ["Acumulado", "12 meses"]
-    if c in acumulados.columns
-]
+    # ÚLTIMO
+    ultimo_periodo = df["D3C"].max()
 
-matriz_temporal = (
-    tabela_meses
-    .join(acumulados[colunas_existentes], how="left")
-    .reset_index()
-).map(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else x)
+    acumulados = (
+        df[df["D3C"] == ultimo_periodo]
+        .pivot_table(
+            index="Produto",
+            columns="D2N",
+            values="Valor",
+            aggfunc="first"
+        )
+    )
+
+    acumulados = acumulados.rename(columns={
+        "IPCA - Variação acumulada no ano": "Acumulado",
+        "IPCA - Variação acumulada em 12 meses": "12 meses",
+    })
+
+    colunas_existentes = [
+        c for c in ["Acumulado", "12 meses"]
+        if c in acumulados.columns
+    ]
+
+    matriz_temporal = (
+        tabela_meses
+        .join(acumulados[colunas_existentes], how="left")
+        .reset_index()
+    ).map(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else x)
 
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_colwidth', None)
-pd.set_option('display.width', None)
-matriz_temporal =pd.DataFrame(matriz_temporal)
-print(f"=============================================================================================================")
-print(matriz_temporal)
-print(f"=============================================================================================================")
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.width', None)
+    matriz_temporal =pd.DataFrame(matriz_temporal)
+    print(f"=============================================================================================================")
+    print(matriz_temporal)
+    print(f"=============================================================================================================")
 
-# EXPORT EXCEL
-# caminho_arquivo = Path(__file__).parent / "ipca fechado.xlsx"
-# matriz_temporal.to_excel(caminho_arquivo, index=False)
+    # EXPORT EXCEL
+    # caminho_arquivo = Path(__file__).parent / "ipca fechado.xlsx"
+    # matriz_temporal.to_excel(caminho_arquivo, index=False)
