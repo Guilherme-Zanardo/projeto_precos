@@ -1,4 +1,4 @@
-name: API IBGE PREÇOS
+name: workflow_api
 
 on:
   schedule:
