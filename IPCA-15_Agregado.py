@@ -14,7 +14,7 @@ VARIAVEIS = {
 }
 
 C315 = obter_codigos('ibge') # Produtos
-PERIODOS = -12
+PERIODOS = -6
 LOCALIDADES = 'N7'
 
 def api_ibge_agregados(tabela, periodos, variaveis, localidades):
@@ -99,7 +99,15 @@ try:
         acumulados.reindex(columns=ordem_acumulados),
         how='left'
     ).fillna(0)
-    print(tabela_final.to_string())
+
+    tabela_visual = tabela_final.reset_index()
+    colunas_valores = tabela_visual.columns[2:]
+    tabela_visual[colunas_valores] = tabela_visual[colunas_valores].map(
+        lambda valor: f'{valor:.2f}'
+    )
+
+    pd.set_option('display.expand_frame_repr', False)
+    print(tabela_visual.to_string(index=False, justify='left'))
 
     
 except Exception as e:
