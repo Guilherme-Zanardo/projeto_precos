@@ -28,10 +28,15 @@ jobs:
         run: |
           python func_list_prod.py
 
-      - name: Resultado IPCA Fechado
-        run: |
-          python IPCA.py 
+      # API SIDRA FECHADO
+      # - name: Resultado IPCA Fechado 
+      #   run: |
+      #     python IPCA.py 
 
-      - name: Resultado IPCA-15
+      # - name: Resultado IPCA-15 
+      #   run: |
+      #     python IPCA-15.py 
+
+      - name: Resultado IPCA-15 
         run: |
-          python IPCA-15.py 
+          python IPCA-15_Agregado.py 
