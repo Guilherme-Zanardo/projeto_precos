@@ -71,7 +71,7 @@ try:
         & dados['Produto'].ne('')
     ]
     tabela_mensal = mensal.pivot(
-        index=['Localidade', 'Produto'],
+        index=['Produto','Localidade'],
         columns='Período',
         values='Valor'
     )
@@ -86,7 +86,7 @@ try:
         & (dados['Período'] == periodo_final)
         & dados['Produto'].ne('')
     ].pivot(
-        index=['Localidade', 'Produto'],
+        index=['Produto','Localidade'],
         columns='Variável',
         values='Valor'
     ).rename(columns={
