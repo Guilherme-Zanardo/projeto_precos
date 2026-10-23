@@ -135,10 +135,10 @@ for n in N71.items(): # Iterar sobre os territórios - Gerar um print por territ
 
         matriz_temporal = pd.DataFrame(matriz_temporal)
 
-        print("=" * 120)
+        print("=" * 135)
         print(matriz_temporal)
-        print("=" * 120)
+        print("=" * 135)
 
         # EXPORT EXCEL
-        # caminho_arquivo = Path(__file__).parent / "ipca-15.xlsx"
-        # matriz_temporal.to_excel(caminho_arquivo, index=False)
+        caminho_arquivo = Path(__file__).parent / f"{n[0].replace('RM de ', '')} - ipca-15.xlsx"
+        matriz_temporal.to_excel(caminho_arquivo, index=False)
